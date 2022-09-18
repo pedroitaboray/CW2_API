@@ -2,53 +2,47 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddDbContext<TodoDb>(opt => opt.UseInMemoryDatabase("TodoList"));
+builder.Services.AddDbContext<UsuarioDb>(opt => opt.UseInMemoryDatabase("UsuarioList"));
 var app = builder.Build();
 
-app.MapGet("/todoitems", async (TodoDb db) =>
-    await db.Todos.Select(x => new TodoItemDTO(x)).ToListAsync());
+app.MapGet("/usuarios", async (UsuarioDb db) =>
+    await db.Usuarios.Select(x => new UsuarioDTO(x)).ToListAsync());
 
-app.MapGet("/todoitems/{id}", async (int id, TodoDb db) =>
-    await db.Todos.FindAsync(id)
-        is Todo todo
-            ? Results.Ok(new TodoItemDTO(todo))
+app.MapGet("/usuarios/{id}", async (int id, UsuarioDb db) =>
+    await db.Usuarios.FindAsync(id)
+        is Usuario usuario
+            ? Results.Ok(new UsuarioDTO(usuario))
             : Results.NotFound());
 
-app.MapPost("/todoitems", async (TodoItemDTO todoItemDTO, TodoDb db) =>
+app.MapPost("/usuarios", async (Usuario usuario, UsuarioDb db) =>
 {
-    var todoItem = new Todo
-    {
-        IsComplete = todoItemDTO.IsComplete,
-        Name = todoItemDTO.Name
-    };
-
-    db.Todos.Add(todoItem);
+    db.Usuarios.Add(usuario);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/todoitems/{todoItem.Id}", new TodoItemDTO(todoItem));
+    return Results.Created($"/usuarios/{usuario.Id}", new UsuarioDTO(usuario));
 });
 
-app.MapPut("/todoitems/{id}", async (int id, TodoItemDTO todoItemDTO, TodoDb db) =>
+app.MapPut("/usuarios/{id}", async (int id, UsuarioDTO usuarioDTO, UsuarioDb db) =>
 {
-    var todo = await db.Todos.FindAsync(id);
+    var usuario = await db.Usuarios.FindAsync(id);
 
-    if (todo is null) return Results.NotFound();
+    if (usuario is null) return Results.NotFound();
 
-    todo.Name = todoItemDTO.Name;
-    todo.IsComplete = todoItemDTO.IsComplete;
+    usuario.Nome = usuarioDTO.Nome;
+    usuario.Ativo = usuarioDTO.Ativo;
 
     await db.SaveChangesAsync();
 
     return Results.NoContent();
 });
 
-app.MapDelete("/todoitems/{id}", async (int id, TodoDb db) =>
+app.MapDelete("/usuarios/{id}", async (int id, UsuarioDb db) =>
 {
-    if (await db.Todos.FindAsync(id) is Todo todo)
+    if (await db.Usuarios.FindAsync(id) is Usuario usuario)
     {
-        db.Todos.Remove(todo);
+        db.Usuarios.Remove(usuario);
         await db.SaveChangesAsync();
-        return Results.Ok(new TodoItemDTO(todo));
+        return Results.Ok(new UsuarioDTO(usuario));
     }
 
     return Results.NotFound();
@@ -56,30 +50,32 @@ app.MapDelete("/todoitems/{id}", async (int id, TodoDb db) =>
 
 app.Run();
 
-public class Todo
+public class Usuario
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
-    public bool IsComplete { get; set; }
-    public string? Secret { get; set; }
+    public string? Nome { get; set; }
+    public bool Ativo { get; set; }
+    public string? Senha { get; set; }
+    public string? Email { get; set; }
 }
 
-public class TodoItemDTO
+public class UsuarioDTO
 {
     public int Id { get; set; }
-    public string? Name { get; set; }
-    public bool IsComplete { get; set; }
+    public string? Nome { get; set; }
+    public bool Ativo { get; set; }
+    public string? Email { get; set; }
 
-    public TodoItemDTO() { }
-    public TodoItemDTO(Todo todoItem) =>
-    (Id, Name, IsComplete) = (todoItem.Id, todoItem.Name, todoItem.IsComplete);
+    public UsuarioDTO() { }
+    public UsuarioDTO(Usuario usuario) =>
+    (Id, Nome, Ativo, Email) = (usuario.Id, usuario.Nome, usuario.Ativo, usuario.Email);
 }
 
 
-class TodoDb : DbContext
+class UsuarioDb : DbContext
 {
-    public TodoDb(DbContextOptions<TodoDb> options)
+    public UsuarioDb(DbContextOptions<UsuarioDb> options)
         : base(options) { }
 
-    public DbSet<Todo> Todos => Set<Todo>();
+    public DbSet<Usuario> Usuarios => Set<Usuario>();
 }

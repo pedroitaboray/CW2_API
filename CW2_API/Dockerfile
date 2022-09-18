@@ -1,7 +1,7 @@
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet restore 
@@ -16,4 +16,4 @@ COPY --from=publish /app .
 # Padrão de container ASP.NET
 # ENTRYPOINT ["dotnet", "CarterAPI.dll"]
 # Opção utilizada pelo Heroku
-CMD ASPNETCORE_URLS=http://*:$PORT dotnet CarterAPI.dll
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet CW2_API.dll
