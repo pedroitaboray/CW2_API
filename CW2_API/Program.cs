@@ -14,6 +14,16 @@ app.MapGet("/usuarios/{id}", async (int id, UsuarioDb db) =>
             ? Results.Ok(new UsuarioDTO(usuario))
             : Results.NotFound());
 
+app.MapPost("/login", async (Login login, UsuarioDb db) =>
+{
+    var usuario = db.Usuarios.FirstOrDefault(u => u.login == login.login && u.Senha == login.senha);
+    if (usuario is null)
+    {
+        return Results.NotFound();
+    }
+    return Results.Ok(new UsuarioDTO(usuario));
+});
+
 app.MapPost("/usuarios", async (Usuario usuario, UsuarioDb db) =>
 {
     db.Usuarios.Add(usuario);
@@ -54,21 +64,29 @@ public class Usuario
 {
     public int Id { get; set; }
     public string? Nome { get; set; }
+    public string? login { get; set; }
     public bool Ativo { get; set; }
     public string? Senha { get; set; }
     public string? Email { get; set; }
+}
+
+public class Login
+{
+    public string? login { get; set; }
+    public string? senha { get; set; }
 }
 
 public class UsuarioDTO
 {
     public int Id { get; set; }
     public string? Nome { get; set; }
+    public string? login { get; set; }
     public bool Ativo { get; set; }
     public string? Email { get; set; }
 
     public UsuarioDTO() { }
     public UsuarioDTO(Usuario usuario) =>
-    (Id, Nome, Ativo, Email) = (usuario.Id, usuario.Nome, usuario.Ativo, usuario.Email);
+    (Id, Nome, Ativo, Email, login) = (usuario.Id, usuario.Nome, usuario.Ativo, usuario.Email, usuario.login);
 }
 
 
