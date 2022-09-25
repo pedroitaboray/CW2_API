@@ -16,4 +16,4 @@ COPY --from=publish /app .
 # Padrão de container ASP.NET
 # ENTRYPOINT ["dotnet", "CarterAPI.dll"]
 # Opção utilizada pelo Heroku
-CMD ASPNETCORE_URLS=http://*:$PORT dotnet CW2_API.dll
+CMD ASPNETCORE_URLS=http://*:$PORT dotnet CW2_API_Prestadores.dll
