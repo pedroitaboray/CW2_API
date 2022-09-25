@@ -3,34 +3,34 @@ using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddDbContext<PrestadorDb>(opt => opt.UseInMemoryDatabase("UsuarioList"));
+builder.Services.AddDbContext<PrestadorDb>(opt => opt.UseInMemoryDatabase("PrestadorList"));
 var app = builder.Build();
 
 app.MapGet("/prestadores", async (PrestadorDb db) =>
-    await db.Usuarios.Select(x => new PrestadorDTO(x)).ToListAsync());
+    await db.Prestadores.Select(x => new PrestadorDTO(x)).ToListAsync());
 
 app.MapGet("/prestadores/{id}", async (int id, PrestadorDb db) =>
-    await db.Usuarios.FindAsync(id)
-        is Prestador usuario
-            ? Results.Ok(new PrestadorDTO(usuario))
+    await db.Prestadores.FindAsync(id)
+        is Prestador prestador
+            ? Results.Ok(new PrestadorDTO(prestador))
             : Results.NotFound());
 
-app.MapPost("/prestadores", async (Prestador usuario, PrestadorDb db) =>
+app.MapPost("/prestadores", async (Prestador prestador, PrestadorDb db) =>
 {
-    db.Usuarios.Add(usuario);
+    db.Prestadores.Add(prestador);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/prestadores/{usuario.Id}", new PrestadorDTO(usuario));
+    return Results.Created($"/prestadores/{prestador.Id}", new PrestadorDTO(prestador));
 });
 
-app.MapPut("/prestadores/{id}", async (int id, PrestadorDTO usuarioDTO, PrestadorDb db) =>
+app.MapPut("/prestadores/{id}", async (int id, PrestadorDTO prestadorDTO, PrestadorDb db) =>
 {
-    var usuario = await db.Usuarios.FindAsync(id);
+    var prestador = await db.Prestadores.FindAsync(id);
 
-    if (usuario is null) return Results.NotFound();
+    if (prestador is null) return Results.NotFound();
 
-    usuario.Nome = usuarioDTO.Nome;
-    usuario.Ativo = usuarioDTO.Ativo;
+    prestador.Nome = prestadorDTO.Nome;
+    prestador.Ativo = prestadorDTO.Ativo;
 
     await db.SaveChangesAsync();
 
@@ -39,11 +39,11 @@ app.MapPut("/prestadores/{id}", async (int id, PrestadorDTO usuarioDTO, Prestado
 
 app.MapDelete("/prestadores/{id}", async (int id, PrestadorDb db) =>
 {
-    if (await db.Usuarios.FindAsync(id) is Prestador usuario)
+    if (await db.Prestadores.FindAsync(id) is Prestador prestador)
     {
-        db.Usuarios.Remove(usuario);
+        db.Prestadores.Remove(prestador);
         await db.SaveChangesAsync();
-        return Results.Ok(new PrestadorDTO(usuario));
+        return Results.Ok(new PrestadorDTO(prestador));
     }
 
     return Results.NotFound();
@@ -77,5 +77,5 @@ class PrestadorDb : DbContext
     public PrestadorDb(DbContextOptions<PrestadorDb> options)
     : base(options) { }
 
-    public DbSet<Prestador> Usuarios => Set<Prestador>();
+    public DbSet<Prestador> Prestadores => Set<Prestador>();
 }
